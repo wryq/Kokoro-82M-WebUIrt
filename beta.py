@@ -44,7 +44,7 @@ def update_model(model_name):
 
 
 
-def text_to_speech(text, model_name="kokoro-v0_19.pth", voice_name="af", speed=1.0, trim=1.0, pad_between_segments=0, remove_silence=True, minimum_silence=0.20):
+def text_to_speech(text, model_name="kokoro-v0_19.pth", voice_name="af", speed=1.0, pad_between_segments=0, remove_silence=True, minimum_silence=0.20,trim=0.5):
     """
     Converts text to speech using the specified parameters and ensures the model is updated only if necessary.
     """
@@ -124,10 +124,10 @@ with gr.Blocks() as demo1:
                     minimum=0.25, maximum=2, value=1, step=0.1, 
                     label='⚡️Speed', info='Adjust the speaking speed'
                 )
-                trim = gr.Slider(
-                    minimum=0, maximum=1, value=0, step=0.1, 
-                    label='🔪 Trim', info='How much to cut from both ends of each segment'
-                )   
+                # trim = gr.Slider(
+                #     minimum=0, maximum=1, value=0, step=0.1, 
+                #     label='🔪 Trim', info='How much to cut from both ends of each segment'
+                # )   
                 pad_between = gr.Slider(
                     minimum=0, maximum=2, value=0, step=0.1, 
                     label='🔇 Pad Between', info='Silent Duration between segments [For Large Text]'
@@ -141,12 +141,12 @@ with gr.Blocks() as demo1:
 
     text.submit(
         text_to_speech, 
-        inputs=[text, model_name,voice, speed, trim, pad_between, remove_silence, minimum_silence], 
+        inputs=[text, model_name,voice, speed, pad_between, remove_silence, minimum_silence], 
         outputs=[audio]
     )
     generate_btn.click(
         text_to_speech, 
-        inputs=[text,model_name, voice, speed, trim, pad_between, remove_silence, minimum_silence], 
+        inputs=[text,model_name, voice, speed, pad_between, remove_silence, minimum_silence], 
         outputs=[audio]
     )
 
@@ -256,13 +256,13 @@ import time
 def your_tts(text,audio_path,actual_duration,speed=1.0):
   global srt_voice_name
   model_name="kokoro-v0_19.pth"
-  tts_path=text_to_speech(text, model_name, voice_name=srt_voice_name,speed=speed)
+  tts_path=text_to_speech(text, model_name, voice_name=srt_voice_name,speed=speed,trim=1.0)
   print(tts_path)
   tts_audio = AudioSegment.from_file(tts_path)
   tts_duration = len(tts_audio)
   if tts_duration > actual_duration:
     speedup_factor = tts_duration / actual_duration
-    tts_path=text_to_speech(text, model_name, voice_name=srt_voice_name,speed=speedup_factor)
+    tts_path=text_to_speech(text, model_name, voice_name=srt_voice_name,speed=speedup_factor,trim=1.0)
   print(tts_path)
   shutil.copy(tts_path,audio_path)
 
