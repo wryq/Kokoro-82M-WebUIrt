@@ -3,6 +3,8 @@ from KOKORO.models import build_model
 from KOKORO.utils import tts,tts_file_name,podcast
 import sys
 sys.path.append('.')
+import os 
+os.system("python download_model.py")
 import torch
 import gc 
 print("Loading model...")
