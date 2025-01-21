@@ -154,11 +154,11 @@ def remove_silence_function(file_path,minimum_silence=50):
     combined.export(output_path, format=audio_format)
     return output_path
 
-import simpleaudio as sa
-def play_audio(filename):
-    wave_obj = sa.WaveObject.from_wave_file(filename)
-    play_obj = wave_obj.play()
-    play_obj.wait_done()
+# import simpleaudio as sa
+# def play_audio(filename):
+#     wave_obj = sa.WaveObject.from_wave_file(filename)
+#     play_obj = wave_obj.play()
+#     play_obj.wait_done()
 
 
 import re
