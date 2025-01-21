@@ -226,7 +226,7 @@ def parse_speechtypes_text(gen_text):
 
     return segments
 
-def podcast(MODEL, device, gen_text, speed=1.0, trim=0, pad_between_segments=0, remove_silence=True, minimum_silence=50):
+def podcast(MODEL, device, gen_text, speed=1.0, trim=0.5, pad_between_segments=0, remove_silence=True, minimum_silence=50):
     segments = parse_speechtypes_text(gen_text)
     speed = clamp_speed(speed)
     trim = clamp_trim(trim)
