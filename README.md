@@ -118,9 +118,10 @@ To run the Gradio app, follow these steps:
 
 ---
 
-![app](https://github.com/user-attachments/assets/ef3e7c0f-8e72-471d-9639-5327b4f06b29)
-![Podcast](https://github.com/user-attachments/assets/03ddd9ee-5b41-4acb-b0c3-53ef5b1a7fbf)
-![voices](https://github.com/user-attachments/assets/d47f803c-b3fb-489b-bc7b-f08020401ce5)
+![app](https://github.com/user-attachments/assets/123e9465-3713-4056-8051-0f526a608645)
+![multispeech](https://github.com/user-attachments/assets/a8c703c3-7950-4966-938c-7f32ae3cfbad)
+![srt](https://github.com/user-attachments/assets/2009cdc1-dfb1-446c-a5ae-e67cace01dbe)
+![voices](https://github.com/user-attachments/assets/9e9c9386-d163-4c6a-b5c8-4d325db72ddc)
 
 ### Credits
 [Kokoro HuggingFace](https://huggingface.co/hexgrad/Kokoro-82M)
