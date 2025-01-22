@@ -120,6 +120,11 @@ To run the Gradio app, follow these steps:
 
 ![app](https://github.com/user-attachments/assets/123e9465-3713-4056-8051-0f526a608645)
 ![multispeech](https://github.com/user-attachments/assets/a8c703c3-7950-4966-938c-7f32ae3cfbad)
+To convert SRT to audio, Linux users need to install FFmpeg:
+```
+apt-get update
+!apt-get install -y ffmpeg
+```
 ![srt](https://github.com/user-attachments/assets/2009cdc1-dfb1-446c-a5ae-e67cace01dbe)
 ![voices](https://github.com/user-attachments/assets/9e9c9386-d163-4c6a-b5c8-4d325db72ddc)
 
