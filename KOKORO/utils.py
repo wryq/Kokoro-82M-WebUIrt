@@ -276,16 +276,20 @@ def podcast(MODEL, device, gen_text, speed=1.0, trim=0.5, pad_between_segments=0
     return output_file
 
 def tts(MODEL,device,text, voice_name, speed=1.0, trim=0.5, pad_between_segments=0.5, output_file="",remove_silence=True,minimum_silence=50):
-    text=clean_text(text)
-    segments = large_text(text, voice_name)
+    language = voice_name[0]
     voice_pack_path = f"./KOKORO/voices/{voice_name}.pt"
+    if voice_name.endswith(".pt"):
+        language="a"
+        voice_pack_path=voice_name
+    text=clean_text(text)
+    segments = large_text(text, language)
     VOICEPACK = torch.load(voice_pack_path, weights_only=True).to(device)
     speed = clamp_speed(speed)
     trim = clamp_trim(trim)
     silence_duration = clamp_trim(pad_between_segments)
     output_file=get_random_file_name(output_file)
     if debug:
-        print(f'Loaded voice: {voice_name}')
+        print(f'Loaded voice: {voice_pack_path}')
         print(f"Speed: {speed}")
         print(f"Trim: {trim}")
         print(f"Silence duration: {silence_duration}")
@@ -305,7 +309,7 @@ def tts(MODEL,device,text, voice_name, speed=1.0, trim=0.5, pad_between_segments
             text = i[1]
             if debug:
                 print(i)
-            audio, out_ps = generate(MODEL, text, VOICEPACK, lang=voice_name[0], speed=speed)
+            audio, out_ps = generate(MODEL, text, VOICEPACK, lang=language, speed=speed)
             audio = trim_if_needed(audio, trim)
 
             # Scale audio from float32 to int16
