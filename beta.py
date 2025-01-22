@@ -1,4 +1,4 @@
-## Need FFMPEG https://www.youtube.com/watch?v=K7znsMo_48I
+
 from KOKORO.models import build_model
 from KOKORO.utils import tts,tts_file_name,podcast
 import sys
@@ -7,6 +7,21 @@ import os
 # os.system("python download_model.py")
 import torch
 import gc 
+import platform
+import shutil
+base_path=os.getcwd()
+def clean_folder_before_start():
+    global base_path
+    folder_list=["dummy","TTS_DUB","kokoro_audio"]
+    for folder in folder_list:
+        if os.path.exists(f"{base_path}/{folder}"):
+            try:
+                shutil.rmtree(f"{base_path}/{folder}")
+            except:
+                pass
+            os.makedirs(f"{base_path}/{folder}", exist_ok=True)
+clean_folder_before_start()
+
 print("Loading model...")
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'Using device: {device}')
@@ -43,8 +58,21 @@ def update_model(model_name):
     return f"Model updated to {model_name}"
 
 
+def manage_files(file_path):
+    if os.path.exists(file_path):
+        file_extension = os.path.splitext(file_path)[1]  # Get file extension
+        file_size = os.path.getsize(file_path)  # Get file size in bytes
+        # Check if file is a valid .pt file and its size is ≤ 5 MB
+        if file_extension == ".pt" and file_size <= 5 * 1024 * 1024:
+            return True  # File is valid and kept
+        else:
+            os.remove(file_path)  # Delete invalid or oversized file
+            return False
+    return False  # File does not exist
 
-def text_to_speech(text, model_name="kokoro-v0_19.pth", voice_name="af", speed=1.0, pad_between_segments=0, remove_silence=True, minimum_silence=0.20,trim=0.5):
+
+
+def text_to_speech(text, model_name="kokoro-v0_19.pth", voice_name="af", speed=1.0, pad_between_segments=0, remove_silence=True, minimum_silence=0.20,custom_voicepack=None,trim=0.5):
     """
     Converts text to speech using the specified parameters and ensures the model is updated only if necessary.
     """
@@ -54,6 +82,12 @@ def text_to_speech(text, model_name="kokoro-v0_19.pth", voice_name="af", speed=1
         minimum_silence = 0.05
     keep_silence = int(minimum_silence * 1000)
     save_at = tts_file_name(text)
+    # print(voice_name,custom_voicepack)
+    if custom_voicepack:
+        if manage_files(custom_voicepack):
+            voice_name = custom_voicepack
+        else:
+            gr.Warning("Upload small size .pt file only. Using the Current voice pack instead.")
     audio_path = tts_maker(
         text, 
         voice_name, 
@@ -115,15 +149,16 @@ with gr.Blocks() as demo1:
                 generate_btn = gr.Button('Generate', variant='primary')
             with gr.Accordion('Audio Settings', open=False):
                 model_name=gr.Dropdown(model_list,label="Model",value=model_list[0])
+                speed = gr.Slider(
+                    minimum=0.25, maximum=2, value=1, step=0.1, 
+                    label='⚡️Speed', info='Adjust the speaking speed'
+                )
                 remove_silence = gr.Checkbox(value=False, label='✂️ Remove Silence From TTS')
                 minimum_silence = gr.Number(
                     label="Keep Silence Upto (In seconds)", 
                     value=0.05
                 )
-                speed = gr.Slider(
-                    minimum=0.25, maximum=2, value=1, step=0.1, 
-                    label='⚡️Speed', info='Adjust the speaking speed'
-                )
+                
                 # trim = gr.Slider(
                 #     minimum=0, maximum=1, value=0, step=0.1, 
                 #     label='🔪 Trim', info='How much to cut from both ends of each segment'
@@ -133,6 +168,8 @@ with gr.Blocks() as demo1:
                     label='🔇 Pad Between', info='Silent Duration between segments [For Large Text]'
                 )
                 
+                custom_voicepack = gr.File(label='Upload Custom VoicePack .pt file')
+                
         with gr.Column():
             audio = gr.Audio(interactive=False, label='Output Audio', autoplay=True)
             with gr.Accordion('Enable Autoplay', open=False):
@@ -141,12 +178,12 @@ with gr.Blocks() as demo1:
 
     text.submit(
         text_to_speech, 
-        inputs=[text, model_name,voice, speed, pad_between, remove_silence, minimum_silence], 
+        inputs=[text, model_name,voice, speed, pad_between, remove_silence, minimum_silence,custom_voicepack], 
         outputs=[audio]
     )
     generate_btn.click(
         text_to_speech, 
-        inputs=[text,model_name, voice, speed, pad_between, remove_silence, minimum_silence], 
+        inputs=[text,model_name, voice, speed, pad_between, remove_silence, minimum_silence,custom_voicepack], 
         outputs=[audio]
     )
 
@@ -257,13 +294,13 @@ def your_tts(text,audio_path,actual_duration,speed=1.0):
   global srt_voice_name
   model_name="kokoro-v0_19.pth"
   tts_path=text_to_speech(text, model_name, voice_name=srt_voice_name,speed=speed,trim=1.0)
-  print(tts_path)
+#   print(tts_path)
   tts_audio = AudioSegment.from_file(tts_path)
   tts_duration = len(tts_audio)
   if tts_duration > actual_duration:
     speedup_factor = tts_duration / actual_duration
     tts_path=text_to_speech(text, model_name, voice_name=srt_voice_name,speed=speedup_factor,trim=1.0)
-  print(tts_path)
+#   print(tts_path)
   shutil.copy(tts_path,audio_path)
 
 
@@ -320,6 +357,77 @@ def clean_srt(input_path):
 
 
 
+import librosa
+import soundfile as sf
+import subprocess
+
+def speedup_audio_librosa(input_file, output_file, speedup_factor):
+    try:
+        # Load the audio file
+        y, sr = librosa.load(input_file, sr=None)
+
+        # Use time stretching to speed up audio without changing pitch
+        y_stretched = librosa.effects.time_stretch(y, rate=speedup_factor)
+
+        # Save the output with the original sample rate
+        sf.write(output_file, y_stretched, sr)
+        # print(f"Speed up by {speedup_factor} completed successfully: {output_file}")
+    
+    except Exception as e:
+        gr.Warning(f"Error during speedup with Librosa: {e}")
+        shutil.copy(input_file, output_file)
+
+
+
+    
+def is_ffmpeg_installed():
+    if platform.system() == "Windows":
+        local_ffmpeg_path = os.path.join("./ffmpeg", "ffmpeg.exe")
+    else:
+        local_ffmpeg_path = "ffmpeg"
+    try:
+        subprocess.run([local_ffmpeg_path, "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        # print("FFmpeg is installed")
+        return True,local_ffmpeg_path
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        # print("FFmpeg is not installed. Using 'librosa' for speedup audio in SRT dubbing")
+        gr.Warning("FFmpeg is not installed. Using 'librosa' for speedup audio in SRT dubbing",duration= 20)
+        return False,local_ffmpeg_path
+
+
+
+
+# ffmpeg -i test.wav -filter:a "atempo=2.0" ffmpeg.wav  -y
+def change_speed(input_file, output_file, speedup_factor):
+    global use_ffmpeg,local_ffmpeg_path
+    if use_ffmpeg:
+        # print("Using FFmpeg for speedup")
+        try:
+            # subprocess.run([
+            #         local_ffmpeg_path,
+            #         "-i", input_file,
+            #         "-filter:a", f"atempo={speedup_factor}",
+            #         output_file,
+            #         "-y"
+            #     ], check=True)
+            subprocess.run([
+                local_ffmpeg_path,
+                "-i", input_file,
+                "-filter:a", f"atempo={speedup_factor}",
+                output_file,
+                "-y"
+                ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception as e:
+            gr.Error(f"Error during speedup with FFmpeg: {e}")
+            speedup_audio_librosa(input_file, output_file, speedup_factor)
+    else:
+        # print("Using Librosa for speedup")
+        speedup_audio_librosa(input_file, output_file, speedup_factor)
+
+
+
+
+
 
 
 class SRTDubbing:
@@ -342,14 +450,15 @@ class SRTDubbing:
         if tts_duration > actual_duration:
             speedup_factor = tts_duration / actual_duration
             speedup_filename = "./cache/speedup_temp.wav"
+            change_speed(tts_filename, speedup_filename, speedup_factor)
             # Use ffmpeg to change audio speed
-            subprocess.run([
-                "ffmpeg",
-                "-i", tts_filename,
-                "-filter:a", f"atempo={speedup_factor}",
-                speedup_filename,
-                "-y"
-            ], check=True)
+            # subprocess.run([
+            #     "ffmpeg",
+            #     "-i", tts_filename,
+            #     "-filter:a", f"atempo={speedup_factor}",
+            #     speedup_filename,
+            #     "-y"
+            # ], check=True)
 
             # Replace the original TTS audio with the sped-up version
             shutil.move(speedup_filename, audio_path)
@@ -455,10 +564,27 @@ class SRTDubbing:
         with open("entries.json", "w") as file:
             json.dump(entries, file, indent=4)
         return entries
-srt_voice_name="am_adam"   
-def srt_process(srt_file_path,voice_name,dest_language="en"):
-  global srt_voice_name
-  srt_voice_name=voice_name
+srt_voice_name="af"   
+use_ffmpeg,local_ffmpeg_path = is_ffmpeg_installed()
+# use_ffmpeg=False
+
+def srt_process(srt_file_path,voice_name,custom_voicepack=None,dest_language="en"):
+  global srt_voice_name,use_ffmpeg
+  
+  if not srt_file_path.endswith(".srt"):
+      gr.Error("Please upload a valid .srt file",duration=5)
+      return None
+  if use_ffmpeg:
+    gr.Success("Using FFmpeg for audio speedup to sync with subtitle")
+  else:
+    gr.Warning("Install FFmpeg to ensure high-quality audio when speeding up the audio to sync with subtitle. Default Using 'librosa' for speedup",duration= 20)
+
+  if custom_voicepack:
+    if manage_files(custom_voicepack):
+        srt_voice_name = custom_voicepack
+    else:
+        srt_voice_name=voice_name
+        gr.Warning("Upload small size .pt file only. Using the Current voice pack instead.")
   srt_dubbing = SRTDubbing()
   dub_save_path=get_subtitle_Dub_path(srt_file_path,dest_language)
   srt_dubbing.srt_to_dub(srt_file_path,dub_save_path,dest_language)
@@ -475,7 +601,7 @@ with gr.Blocks() as demo3:
 
     gr.Markdown(
         """
-        # Generate Audio File From Subtitle [Single Speaker Only]
+        # Generate Audio File From Subtitle [Upload Only .srt file]
         
         To generate subtitles, you can use the [Whisper Turbo Subtitle](https://github.com/NeuralFalconYT/Whisper-Turbo-Subtitle) 
         
@@ -494,7 +620,12 @@ with gr.Blocks() as demo3:
                 )
             with gr.Row():
                 generate_btn_ = gr.Button('Generate', variant='primary')
-          
+
+            with gr.Accordion('Audio Settings', open=False):
+                custom_voicepack = gr.File(label='Upload Custom VoicePack .pt file')
+                
+            
+            
         with gr.Column():
             audio = gr.Audio(interactive=False, label='Output Audio', autoplay=True)
             with gr.Accordion('Enable Autoplay', open=False):
@@ -508,15 +639,18 @@ with gr.Blocks() as demo3:
     # )
     generate_btn_.click(
         srt_process, 
-        inputs=[srt_file,voice], 
+        inputs=[srt_file,voice,custom_voicepack], 
         outputs=[audio]
     )
     
-    
+
+
 display_text = "  \n".join(voice_list)
 
 with gr.Blocks() as demo4:
     gr.Markdown(f"# Voice Names \n{display_text}")
+    
+
 
 
 import click
