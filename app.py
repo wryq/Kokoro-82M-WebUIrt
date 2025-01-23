@@ -586,6 +586,8 @@ def srt_process(srt_file_path,voice_name,custom_voicepack=None,dest_language="en
     else:
         srt_voice_name=voice_name
         gr.Warning("Upload small size .pt file only. Using the Current voice pack instead.")
+  else:
+     srt_voice_name=voice_name 
   srt_dubbing = SRTDubbing()
   dub_save_path=get_subtitle_Dub_path(srt_file_path,dest_language)
   srt_dubbing.srt_to_dub(srt_file_path,dub_save_path,dest_language)
