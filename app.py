@@ -12,7 +12,8 @@ import shutil
 base_path=os.getcwd()
 def clean_folder_before_start():
     global base_path
-    folder_list=["dummy","TTS_DUB","kokoro_audio"]
+    # folder_list=["dummy","TTS_DUB","kokoro_audio"]
+    folder_list=["dummy","TTS_DUB"]#,"kokoro_audio"]
     for folder in folder_list:
         if os.path.exists(f"{base_path}/{folder}"):
             try:
