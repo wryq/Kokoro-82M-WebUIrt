@@ -121,15 +121,17 @@ To run the Gradio app, follow these steps:
 
 ---
 
-![app](https://github.com/user-attachments/assets/123e9465-3713-4056-8051-0f526a608645)
-![multispeech](https://github.com/user-attachments/assets/a8c703c3-7950-4966-938c-7f32ae3cfbad)
+![1](https://github.com/user-attachments/assets/9907ed46-f943-4819-8f9b-6ec8666115d2)
+![2](https://github.com/user-attachments/assets/79eba62f-5829-414e-8ce0-5420ecd134b5)
+
 To convert SRT to audio, Linux users need to install FFmpeg:
 ```
 apt-get update
 !apt-get install -y ffmpeg
 ```
-![srt](https://github.com/user-attachments/assets/2009cdc1-dfb1-446c-a5ae-e67cace01dbe)
-![voices](https://github.com/user-attachments/assets/9e9c9386-d163-4c6a-b5c8-4d325db72ddc)
+![3](https://github.com/user-attachments/assets/61a18dc0-6b11-41c0-b693-6cfaf18a9084)
+![4](https://github.com/user-attachments/assets/f633045c-ce92-491f-9a83-58b07a12c583)
+![5](https://github.com/user-attachments/assets/6ffaab71-7bbd-47a0-8a48-0c7ee4be3c85)
 
 ### Credits
 [Kokoro HuggingFace](https://huggingface.co/hexgrad/Kokoro-82M)
