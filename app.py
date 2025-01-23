@@ -645,9 +645,275 @@ with gr.Blocks() as demo3:
     
 
 
+#### Voice mixing 
+# modified from here
+# https://huggingface.co/spaces/ysharma/Make_Custom_Voices_With_KokoroTTS
+def get_voices():
+    voices = {}
+    for i in os.listdir("./KOKORO/voices"):
+        if i.endswith(".pt"):
+            voice_name = i.replace(".pt", "")
+            voices[voice_name] = torch.load(f"./KOKORO/voices/{i}", weights_only=True).to(device)
+
+    slider_configs = {}
+
+    # Iterate through the predefined list of voices
+    for i in voices:
+        # Handle the default case for "af"
+        if i == "af":
+            slider_configs["af"]= "Default 👩🇺🇸"
+            continue
+        if i == "af_nicole":
+            slider_configs["af_nicole"]="Nicole 😏🇺🇸"
+            continue
+        if i == "af_bella":
+            slider_configs["af_bella"]="Bella 🤗🇺🇸"
+            continue
+
+        # Determine the country emoji
+        country = "🇺🇸" if i.startswith("a") else "🇬🇧"
+
+        # Determine the gender emoji and name
+        if "f_" in i:
+            display_name = f"{i.split('_')[-1].capitalize()} 👩{country}"
+        elif "m_" in i:
+            display_name = f"{i.split('_')[-1].capitalize()} 👨{country}"
+        else:
+            display_name = f"{i.capitalize()} 😐"
+
+        # Append the voice tuple to the list
+        slider_configs[i]= display_name
+
+    return voices, slider_configs
+
+voices, slider_configs = get_voices()
+
+
+def parse_voice_formula(formula):
+    global voices
+    """Parse the voice formula string and return the combined voice tensor."""
+    if not formula.strip():
+        raise ValueError("Empty voice formula")
+        
+    # Initialize the weighted sum
+    weighted_sum = None
+    
+    # Split the formula into terms
+    terms = formula.split('+')
+    weights=0
+    for term in terms:
+        # Parse each term (format: "voice_name * 0.333")
+        parts = term.strip().split('*')
+        if len(parts) != 2:
+            raise ValueError(f"Invalid term format: {term.strip()}. Should be 'voice_name * weight'")
+
+        voice_name = parts[0].strip()
+        weight = float(parts[1].strip())
+        weights+=weight
+        # print(voice_name)
+        # print(weight)
+        # Get the voice tensor
+        if voice_name not in voices:
+            raise ValueError(f"Unknown voice: {voice_name}")
+        
+        voice_tensor = voices[voice_name]
+        
+        # Add to weighted sum
+        if weighted_sum is None:
+            weighted_sum = weight * voice_tensor
+        else:
+            weighted_sum += weight * voice_tensor
+    return weighted_sum/weights
+
+
+
+
+
+
+
+def get_new_voice(formula):
+    # print(formula)
+    try:
+        # Parse the formula and get the combined voice tensor
+        weighted_voices = parse_voice_formula(formula)
+        voice_pack_name = "./weighted_normalised_voices.pt"
+        # Save and load the combined voice
+        torch.save(weighted_voices, voice_pack_name)
+        # print(f"Voice pack saved at: {voice_pack_name}")
+        return voice_pack_name
+    except Exception as e:
+        raise gr.Error(f"Failed to create voice: {str(e)}")
+
+
+def generate_voice_formula(*values):
+        """
+        Generate a formatted string showing the normalized voice combination.
+        Returns: String like "0.6 * voice1" or "0.4 * voice1 + 0.6 * voice2"
+        """
+        n = len(values) // 2
+        checkbox_values = values[:n]
+        slider_values = list(values[n:])
+        global slider_configs
+        # Get active sliders and their names
+        active_pairs = [(slider_values[i], slider_configs[i][0])
+                      for i in range(len(slider_configs))
+                      if checkbox_values[i]]
+
+        if not active_pairs:
+            return ""
+
+        # If only one voice is selected, use its actual value
+        if len(active_pairs) == 1:
+            value, name = active_pairs[0]
+            return f"{value:.3f} * {name}"
+
+        # Calculate sum for normalization of multiple voices
+        total_sum = sum(value for value, _ in active_pairs)
+
+        if total_sum == 0:
+            return ""
+
+        # Generate normalized formula for multiple voices
+        terms = []
+        for value, name in active_pairs:
+            normalized_value = value / total_sum
+            terms.append(f"{normalized_value:.3f} * {name}")
+
+        return " + ".join(terms)
+    
+    
+
+
+
+def create_voice_mix_ui():
+    with gr.Blocks() as demo:
+        gr.Markdown(
+            """
+            # Kokoro Voice Mixer
+            Select voices and adjust their weights to create a mixed voice.
+            """
+        )
+        
+        voice_components = {}
+        voice_names = list(voices.keys())
+        female_voices = [name for name in voice_names if "f_" in name]
+        male_voices = [name for name in voice_names if "b_" in name]
+        neutral_voices = [name for name in voice_names if "f_" not in name and "b_" not in name]
+        
+        # Define how many columns you want
+        num_columns = 3
+
+        # Function to generate UI
+        def generate_ui_row(voice_list):
+            num_voices = len(voice_list)
+            num_rows = (num_voices + num_columns - 1) // num_columns
+            for i in range(num_rows):
+                with gr.Row():
+                    for j in range(num_columns):
+                        index = i * num_columns + j
+                        if index < num_voices:
+                            voice_name = voice_list[index]
+                            with gr.Column():
+                                checkbox = gr.Checkbox(label=slider_configs[voice_name])
+                                weight_slider = gr.Slider(
+                                    minimum=0,
+                                    maximum=1,
+                                    value=1.0,
+                                    step=0.01,
+                                    interactive=False
+                                )
+                            voice_components[voice_name] = (checkbox, weight_slider)
+                            checkbox.change(
+                                lambda x, slider=weight_slider: gr.update(interactive=x),
+                                inputs=[checkbox],
+                                outputs=[weight_slider]
+                            )
+        
+        generate_ui_row(female_voices)
+        generate_ui_row(male_voices)
+        generate_ui_row(neutral_voices)
+        
+        formula_inputs = []
+        for i in voice_components:
+            checkbox, slider = voice_components[i]
+            formula_inputs.append(checkbox)
+            formula_inputs.append(slider)
+
+        with gr.Row():
+            voice_formula = gr.Textbox(label="Voice Formula", interactive=False)
+        
+        # Function to dynamically update the voice formula
+        def update_voice_formula(*args):
+            formula_parts = []
+            for i, (checkbox, slider) in enumerate(voice_components.values()):
+                if args[i * 2]:  # If checkbox is selected
+                    formula_parts.append(f"{list(voice_components.keys())[i]} * {args[i * 2 + 1]:.3f}")
+            return " + ".join(formula_parts)
+
+
+        # Update formula whenever any checkbox or slider changes
+        for checkbox, slider in voice_components.values():
+            checkbox.change(
+                update_voice_formula,
+                inputs=formula_inputs,
+                outputs=[voice_formula]
+            )
+            slider.change(
+                update_voice_formula,
+                inputs=formula_inputs,
+                outputs=[voice_formula]
+            )
+        
+        with gr.Row():
+            voice_text = gr.Textbox(
+                label='Enter Text',
+                lines=3,
+                placeholder="Type your text here to preview the custom voice..."
+            )
+            voice_generator = gr.Button('Generate', variant='primary')
+        with gr.Accordion('Audio Settings', open=False):
+            model_name=gr.Dropdown(model_list,label="Model",value=model_list[0])
+            speed = gr.Slider(
+                minimum=0.25, maximum=2, value=1, step=0.1, 
+                label='⚡️Speed', info='Adjust the speaking speed'
+            )
+            remove_silence = gr.Checkbox(value=False, label='✂️ Remove Silence From TTS')            
+        with gr.Row():
+            voice_audio = gr.Audio(interactive=False, label='Output Audio', autoplay=True)
+        with gr.Row():
+            mix_voice_download = gr.File(label="Download VoicePack")
+        with gr.Accordion('Enable Autoplay', open=False):
+                        autoplay = gr.Checkbox(value=True, label='Autoplay')
+                        autoplay.change(toggle_autoplay, inputs=[autoplay], outputs=[voice_audio])
+        def generate_custom_audio(text_input, formula_text, model_name, speed, remove_silence):
+            try:
+                new_voice_pack = get_new_voice(formula_text)
+                audio_output_path =text_to_speech(text=text_input, model_name=model_name, voice_name="af", speed=speed, pad_between_segments=0, remove_silence=remove_silence, minimum_silence=0.05,custom_voicepack=new_voice_pack,trim=0.0)
+                # audio_output_path = text_to_speech(text=text_input, model_name=model_name,voice_name="af", speed=1.0, custom_voicepack=new_voice_pack)
+                return audio_output_path,new_voice_pack
+            except Exception as e:
+                raise gr.Error(f"Failed to generate audio: {e}")
+
+        
+        voice_generator.click(
+            generate_custom_audio,
+            inputs=[voice_text, voice_formula,model_name,speed,remove_silence],
+            outputs=[voice_audio,mix_voice_download]
+        )     
+    return demo
+
+demo4 = create_voice_mix_ui()
+
+
+
+
+
+
+
+
 display_text = "  \n".join(voice_list)
 
-with gr.Blocks() as demo4:
+with gr.Blocks() as demo5:
     gr.Markdown(f"# Voice Names \n{display_text}")
     
 
@@ -658,7 +924,7 @@ import click
 @click.option("--debug", is_flag=True, default=False, help="Enable debug mode.")
 @click.option("--share", is_flag=True, default=False, help="Enable sharing of the interface.")
 def main(debug, share):
-    demo = gr.TabbedInterface([demo1, demo2,demo3,demo4], ["Batched TTS", "Multiple Speech-Type Generation","SRT Dubbing","Available Voice Names"],title="Kokoro TTS")
+    demo = gr.TabbedInterface([demo1, demo2,demo3,demo4,demo5], ["Batched TTS", "Multiple Speech-Type Generation","SRT Dubbing","Voice Mix","Available Voice Names"],title="Kokoro TTS")
 
     demo.queue().launch(debug=debug, share=share)
     #Run on local network
@@ -668,3 +934,27 @@ def main(debug, share):
 
 if __name__ == "__main__":
     main()    
+
+
+##For client side
+# from gradio_client import Client
+# import shutil
+# import os
+# os.makedirs("temp_audio", exist_ok=True)
+# from gradio_client import Client
+# client = Client("http://127.0.0.1:7860/")
+# result = client.predict(
+# 		text="Hello!!",
+# 		model_name="kokoro-v0_19.pth",
+# 		voice_name="af_bella",
+# 		speed=1,
+# 		trim=0,
+# 		pad_between_segments=0,
+# 		remove_silence=False,
+# 		minimum_silence=0.05,
+# 		api_name="/text_to_speech"
+# )
+
+# save_at=f"./temp_audio/{os.path.basename(result)}"
+# shutil.move(result, save_at)
+# print(f"Saved at {save_at}")
