@@ -924,7 +924,7 @@ import click
 @click.option("--debug", is_flag=True, default=False, help="Enable debug mode.")
 @click.option("--share", is_flag=True, default=False, help="Enable sharing of the interface.")
 def main(debug, share):
-    demo = gr.TabbedInterface([demo1, demo2,demo3,demo4,demo5], ["Batched TTS", "Multiple Speech-Type Generation","SRT Dubbing","Voice Mix","Available Voice Names"],title="Kokoro TTS")
+    demo = gr.TabbedInterface([demo1, demo2,demo3,demo4,demo5], ["Batched TTS", "Multiple Speech-Type Generation","SRT Dubbing","Voice Mix","Available Voice Names"],title="Kokoro TTS",theme='JohnSmith9982/small_and_pretty')
 
     demo.queue().launch(debug=debug, share=share)
     #Run on local network
