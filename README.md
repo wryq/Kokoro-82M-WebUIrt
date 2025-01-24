@@ -1,7 +1,6 @@
 # Kokoro-TTS
 
 **Note:** This is not the official repository.<br> 
-My written codes are messy and not well-organized. I’m not a professional coder. I used the help of ChatGPT, along with my basic Python knowledge and some copy-pasting from the official Kokoro 82M and other sources. But it works.<br>
 
 Alternative ways to use Kokoro-TTS [kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx), [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI), [kokoro](https://github.com/hexgrad/kokoro), [kokoro-web](https://huggingface.co/spaces/webml-community/kokoro-web), [Kokoro-Custom-Voice](https://huggingface.co/spaces/ysharma/Make_Custom_Voices_With_KokoroTTS)
 
@@ -102,8 +101,15 @@ python download_model.py
      > **Note:** This command suppresses unnecessary output for a cleaner installation process.
 
 ---
+#### 8. Install ffmpeg [Only For Linux Users]
+Skip this step if you are using Windows.
+You only need FFmpeg if you plan to use it for subtitle dubbing feature. If you just want to use *Kokoro TTS*, you can *skip* this step too.
+```
+  apt-get update
+  !apt-get install -y ffmpeg
+```
 
-#### 8. Run Gradio App
+#### 9. Run Gradio App
 
 To run the Gradio app, follow these steps:
 
@@ -123,16 +129,25 @@ To run the Gradio app, follow these steps:
 
 ![1](https://github.com/user-attachments/assets/9907ed46-f943-4819-8f9b-6ec8666115d2)
 ![2](https://github.com/user-attachments/assets/79eba62f-5829-414e-8ce0-5420ecd134b5)
-
-To convert SRT to audio, Linux users need to install FFmpeg:
-```
-apt-get update
-!apt-get install -y ffmpeg
-```
 ![3](https://github.com/user-attachments/assets/61a18dc0-6b11-41c0-b693-6cfaf18a9084)
 ![4](https://github.com/user-attachments/assets/f633045c-ce92-491f-9a83-58b07a12c583)
 ![5](https://github.com/user-attachments/assets/6ffaab71-7bbd-47a0-8a48-0c7ee4be3c85)
 
+### License
+[Kokoro model](https://huggingface.co/hexgrad/Kokoro-82M), is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)<br>
+The inference code adapted from StyleTTS2 is MIT licensed.
 ### Credits
+**Model:**
 [Kokoro HuggingFace](https://huggingface.co/hexgrad/Kokoro-82M)
+
+**Podcast Generation Inspiration:**
+[E2-F5-TTS](https://huggingface.co/spaces/mrfakename/E2-F5-TTS)
+
+**Voice Mix Feature:**
+[Make Custom Voices With KokoroTTS](https://huggingface.co/spaces/ysharma/Make_Custom_Voices_With_KokoroTTS)
+
+**AI Assistance:** <br>
+[ChatGPT](https://chatgpt.com/)<br>
+[Google AI Studio](https://aistudio.google.com/)<br>
+[Github Copilot](https://github.com/features/copilot)<br>
 
