@@ -1,6 +1,6 @@
 # Kokoro-TTS
 
-**Note:** This is not the official repository.<br> 
+**Note:** This is not the official repository.<br> The written code is not well-organized.<br>
 
 Alternative ways to use Kokoro-TTS [kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx), [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI), [kokoro](https://github.com/hexgrad/kokoro), [kokoro-web](https://huggingface.co/spaces/webml-community/kokoro-web), [Kokoro-Custom-Voice](https://huggingface.co/spaces/ysharma/Make_Custom_Voices_With_KokoroTTS)
 
