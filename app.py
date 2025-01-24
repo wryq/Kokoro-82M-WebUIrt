@@ -209,7 +209,7 @@ with gr.Blocks() as demo2:
     gr.Markdown(
         """
     # Multiple Speech-Type Generation
-    This section allows you to generate multiple speech types or multiple people's voices. Enter your text in the format shown below, and the system will generate speech using the appropriate type. If unspecified, the model will use "af" voice.
+    This section allows you to generate multiple speech types or different VOICE PACK's at same text Input. Enter your text in the format shown below, and the system will generate speech using the appropriate type. If unspecified, the model will use "af" voice.
     Format:
     {voice_name} your text here
     """
