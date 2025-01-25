@@ -274,8 +274,10 @@ def podcast(MODEL, device, gen_text, speed=1.0, trim=0.5, pad_between_segments=0
         output_file = remove_silence_function(output_file, minimum_silence=minimum_silence)
 
     return output_file
-
+old_voice_pack_path=""
+old_VOICEPACK=None
 def tts(MODEL,device,text, voice_name, speed=1.0, trim=0.5, pad_between_segments=0.5, output_file="",remove_silence=True,minimum_silence=50):
+    global old_voice_pack_path,old_VOICEPACK
     language = voice_name[0]
     voice_pack_path = f"./KOKORO/voices/{voice_name}.pt"
     if voice_name.endswith(".pt"):
@@ -283,7 +285,14 @@ def tts(MODEL,device,text, voice_name, speed=1.0, trim=0.5, pad_between_segments
         voice_pack_path=voice_name
     text=clean_text(text)
     segments = large_text(text, language)
-    VOICEPACK = torch.load(voice_pack_path, weights_only=True).to(device)
+    if (old_voice_pack_path!=voice_pack_path)or ("weighted_normalised_voices.pt" in voice_pack_path):
+        VOICEPACK = torch.load(voice_pack_path, weights_only=True).to(device)
+        old_voice_pack_path=voice_pack_path
+        old_VOICEPACK=VOICEPACK
+        # print("Loaded new voice pack")
+    else:
+        VOICEPACK=old_VOICEPACK
+        # print("Using old voice pack")
     speed = clamp_speed(speed)
     trim = clamp_trim(trim)
     silence_duration = clamp_trim(pad_between_segments)
