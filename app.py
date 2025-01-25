@@ -291,18 +291,39 @@ import time
 
 # os.chdir(install_path)
 
-def your_tts(text,audio_path,actual_duration,speed=1.0):
-  global srt_voice_name
-  model_name="kokoro-v0_19.pth"
-  tts_path=text_to_speech(text, model_name, voice_name=srt_voice_name,speed=speed,trim=1.0)
-#   print(tts_path)
-  tts_audio = AudioSegment.from_file(tts_path)
-  tts_duration = len(tts_audio)
-  if tts_duration > actual_duration:
-    speedup_factor = tts_duration / actual_duration
-    tts_path=text_to_speech(text, model_name, voice_name=srt_voice_name,speed=speedup_factor,trim=1.0)
-#   print(tts_path)
-  shutil.copy(tts_path,audio_path)
+# def your_tts(text,audio_path,actual_duration,speed=1.0):
+#   global srt_voice_name
+#   model_name="kokoro-v0_19.pth"
+#   tts_path=text_to_speech(text, model_name, voice_name=srt_voice_name,speed=speed,trim=1.0)
+# #   print(tts_path)
+#   tts_audio = AudioSegment.from_file(tts_path)
+#   tts_duration = len(tts_audio)
+#   if tts_duration > actual_duration:
+#     speedup_factor = tts_duration / actual_duration
+#     tts_path=text_to_speech(text, model_name, voice_name=srt_voice_name,speed=speedup_factor,trim=1.0)
+# #   print(tts_path)
+#   shutil.copy(tts_path,audio_path)
+
+
+def your_tts(text, audio_path, actual_duration, speed=1.0):
+    global srt_voice_name
+    model_name = "kokoro-v0_19.pth"
+    
+    # Generate TTS audio
+    tts_path = text_to_speech(text, model_name, voice_name=srt_voice_name, speed=speed, trim=1.0)
+    tts_audio = AudioSegment.from_file(tts_path)
+    tts_duration = len(tts_audio)
+    
+    if actual_duration > 0:
+        if tts_duration > actual_duration:
+            speedup_factor = tts_duration / actual_duration
+            tts_path = text_to_speech(text, model_name, voice_name=srt_voice_name, speed=speedup_factor, trim=1.0)
+    else:
+        pass
+    
+    shutil.copy(tts_path, audio_path)
+
+
 
 
 
