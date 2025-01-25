@@ -910,15 +910,49 @@ demo4 = create_voice_mix_ui()
 
 
 
+# display_text = "  \n".join(voice_list)
 
+# with gr.Blocks() as demo5:
+#     gr.Markdown(f"# Voice Names \n{display_text}")
+    
+#get voice names useful for local api
+import os
+import json
 
+def get_voice_names():
+    male_voices, female_voices, other_voices = [], [], []
+    
+    for filename in os.listdir("./KOKORO/voices"):
+        if filename.endswith('.pt'):
+            name = os.path.splitext(filename)[0]
+            if "m_" in name:
+                male_voices.append(name)
+            elif name=="af":
+                female_voices.append(name)
+            elif "f_" in name:
+                female_voices.append(name)
+            else:
+                other_voices.append(name)
+    
+    # Sort the lists by the length of the voice names
+    male_voices = sorted(male_voices, key=len)
+    female_voices = sorted(female_voices, key=len)
+    other_voices = sorted(other_voices, key=len)
 
-
-display_text = "  \n".join(voice_list)
+    return json.dumps({
+        "male_voices": male_voices,
+        "female_voices": female_voices,
+        "other_voices": other_voices
+    }, indent=4)
 
 with gr.Blocks() as demo5:
-    gr.Markdown(f"# Voice Names \n{display_text}")
-    
+    gr.Markdown(f"# Voice Names")
+    get_voice_button = gr.Button("Get Voice Names")
+    voice_names = gr.Textbox(label="Voice Names", placeholder="Click 'Get Voice Names' to display the list of available voice names", lines=10)
+    get_voice_button.click(get_voice_names, outputs=[voice_names])
+
+
+
 
 
 
