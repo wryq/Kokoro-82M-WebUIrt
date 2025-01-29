@@ -6,8 +6,8 @@ from itertools import combinations
 import platform
 
 # Repository ID
-# repo_id = "hexgrad/Kokoro-82M"
-repo_id="Remsky/kokoro-82m-mirror"
+repo_id = "hexgrad/Kokoro-82M"
+repo_id2="Remsky/kokoro-82m-mirror"
 # Set up the cache directory
 cache_dir = "./cache"
 os.makedirs(cache_dir, exist_ok=True)
@@ -61,8 +61,8 @@ def get_voice_models():
 def download_base_models():
     """Downloads Kokoro base model and fp16 version if missing."""
 
-    download_files(repo_id, [KOKORO_FILE], KOKORO_DIR, cache_dir)
-    download_files(repo_id, [FP16_FILE], FP16_DIR, cache_dir)
+    download_files(repo_id2, [KOKORO_FILE], KOKORO_DIR, cache_dir)
+    download_files(repo_id2, [FP16_FILE], FP16_DIR, cache_dir)
 
 def setup_batch_file():
     """Creates a 'run_app.bat' file for Windows if it doesn't exist."""
