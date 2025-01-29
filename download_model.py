@@ -55,8 +55,11 @@ def get_voice_models():
     if download_voice:
         #  print(f"Files to download: {download_voice}")
          pass
-    
-    download_files(repo_id, [f"voices/{file}" for file in download_voice], VOICES_DIR, cache_dir)
+    eng_voices = []
+    for i in download_voice:
+         if i.startswith("a") or i.startswith("b"):
+              eng_voices.append(i)        
+    download_files(repo_id, [f"voices/{file}" for file in eng_voices], VOICES_DIR, cache_dir)
 
 def download_base_models():
     """Downloads Kokoro base model and fp16 version if missing."""
