@@ -141,7 +141,7 @@ with gr.Blocks() as demo1:
             with gr.Row():
                 voice = gr.Dropdown(
                     voice_list, 
-                    value='af', 
+                    value='af_bella', 
                     allow_custom_value=False, 
                     label='Voice', 
                     info='Starred voices are more stable'
@@ -199,7 +199,7 @@ def podcast_maker(text,remove_silence=False,minimum_silence=50,model_name="kokor
     
 
 
-dummpy_example="""{af} Hello, I'd like to order a sandwich please.                                                         
+dummpy_example="""{af_alloy} Hello, I'd like to order a sandwich please.                                                         
 {af_sky} What do you mean you're out of bread?                                                                      
 {af_bella} I really wanted a sandwich though...                                                              
 {af_nicole} You know what, darn you and your little shop!                                                                       
@@ -218,7 +218,7 @@ with gr.Blocks() as demo2:
         gr.Markdown(
             """
             **Example Input:**                                                                      
-            {af} Hello, I'd like to order a sandwich please.                                                         
+            {af_alloy} Hello, I'd like to order a sandwich please.                                                         
             {af_sky} What do you mean you're out of bread?                                                                      
             {af_bella} I really wanted a sandwich though...                                                              
             {af_nicole} You know what, darn you and your little shop!                                                                       
@@ -586,7 +586,7 @@ class SRTDubbing:
         with open("entries.json", "w") as file:
             json.dump(entries, file, indent=4)
         return entries
-srt_voice_name="af"   
+srt_voice_name="af_bella"   
 use_ffmpeg,local_ffmpeg_path = is_ffmpeg_installed()
 # use_ffmpeg=False
 
@@ -638,7 +638,7 @@ with gr.Blocks() as demo3:
             with gr.Row():
                 voice = gr.Dropdown(
                     voice_list, 
-                    value='af', 
+                    value='af_bella', 
                     allow_custom_value=False, 
                     label='Voice', 
                 )
