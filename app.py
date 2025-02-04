@@ -141,7 +141,7 @@ with gr.Blocks() as demo1:
             with gr.Row():
                 voice = gr.Dropdown(
                     voice_list, 
-                    value='af_bella', 
+                    value='af', 
                     allow_custom_value=False, 
                     label='Voice', 
                     info='Starred voices are more stable'
@@ -188,18 +188,18 @@ with gr.Blocks() as demo1:
         outputs=[audio]
     )
 
-def podcast_maker(text,remove_silence=False,minimum_silence=50,model_name="kokoro-v0_19.pth"):
+def podcast_maker(text,remove_silence=False,minimum_silence=50,speed=0.9,model_name="kokoro-v0_19.pth"):
     global MODEL,device
     update_model(model_name)
     if not minimum_silence:
         minimum_silence = 0.05
     keep_silence = int(minimum_silence * 1000)
-    podcast_save_at=podcast(MODEL, device,text,remove_silence=remove_silence, minimum_silence=keep_silence)
+    podcast_save_at=podcast(MODEL, device,text,remove_silence=remove_silence, minimum_silence=keep_silence,speed=speed)
     return podcast_save_at
     
 
 
-dummpy_example="""{af_alloy} Hello, I'd like to order a sandwich please.                                                         
+dummpy_example="""{af} Hello, I'd like to order a sandwich please.                                                         
 {af_sky} What do you mean you're out of bread?                                                                      
 {af_bella} I really wanted a sandwich though...                                                              
 {af_nicole} You know what, darn you and your little shop!                                                                       
@@ -218,7 +218,7 @@ with gr.Blocks() as demo2:
         gr.Markdown(
             """
             **Example Input:**                                                                      
-            {af_alloy} Hello, I'd like to order a sandwich please.                                                         
+            {af} Hello, I'd like to order a sandwich please.                                                         
             {af_sky} What do you mean you're out of bread?                                                                      
             {af_bella} I really wanted a sandwich though...                                                              
             {af_nicole} You know what, darn you and your little shop!                                                                       
@@ -236,6 +236,10 @@ with gr.Blocks() as demo2:
             with gr.Row():
                 generate_btn = gr.Button('Generate', variant='primary')
             with gr.Accordion('Audio Settings', open=False):
+                speed = gr.Slider(
+                minimum=0.25, maximum=2, value=1, step=0.1, 
+                label='⚡️Speed', info='Adjust the speaking speed'
+                )
                 remove_silence = gr.Checkbox(value=False, label='✂️ Remove Silence From TTS')
                 minimum_silence = gr.Number(
                     label="Keep Silence Upto (In seconds)", 
@@ -249,12 +253,12 @@ with gr.Blocks() as demo2:
 
     text.submit(
         podcast_maker, 
-        inputs=[text, remove_silence, minimum_silence], 
+        inputs=[text, remove_silence, minimum_silence,speed], 
         outputs=[audio]
     )
     generate_btn.click(
         podcast_maker, 
-        inputs=[text, remove_silence, minimum_silence], 
+        inputs=[text, remove_silence, minimum_silence,speed], 
         outputs=[audio]
     )
 
@@ -305,7 +309,7 @@ import time
 #   shutil.copy(tts_path,audio_path)
 
 
-def your_tts(text, audio_path, actual_duration, speed=1.0):
+def your_tts(text, audio_path, actual_duration, speed=0.8):
     global srt_voice_name
     model_name = "kokoro-v0_19.pth"
     
@@ -586,7 +590,7 @@ class SRTDubbing:
         with open("entries.json", "w") as file:
             json.dump(entries, file, indent=4)
         return entries
-srt_voice_name="af_bella"   
+srt_voice_name="af"   
 use_ffmpeg,local_ffmpeg_path = is_ffmpeg_installed()
 # use_ffmpeg=False
 
@@ -638,7 +642,7 @@ with gr.Blocks() as demo3:
             with gr.Row():
                 voice = gr.Dropdown(
                     voice_list, 
-                    value='af_bella', 
+                    value='af', 
                     allow_custom_value=False, 
                     label='Voice', 
                 )
@@ -984,7 +988,7 @@ import click
 def main(debug, share):
     demo = gr.TabbedInterface([demo1, demo2,demo3,demo4,demo5], ["Batched TTS", "Multiple Speech-Type Generation","SRT Dubbing","Voice Mix","Available Voice Names"],title="Kokoro TTS",theme='JohnSmith9982/small_and_pretty')
 
-    demo.queue().launch(debug=debug, share=share)
+    demo.queue().launch(debug=debug, share=share,server_port=9000)
     #Run on local network
     # laptop_ip="192.168.0.30"
     # port=8080
