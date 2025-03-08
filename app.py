@@ -73,7 +73,7 @@ def manage_files(file_path):
 
 
 
-def text_to_speech(text, model_name="kokoro-v0_19.pth", voice_name="af_heart", speed=1.0, pad_between_segments=0, remove_silence=True, minimum_silence=0.20,custom_voicepack=None,trim=0.0):
+def text_to_speech(text, model_name="kokoro-v0_19.pth", voice_name="af", speed=1.0, pad_between_segments=0, remove_silence=True, minimum_silence=0.20,custom_voicepack=None,trim=0.0):
     """
     Converts text to speech using the specified parameters and ensures the model is updated only if necessary.
     """
